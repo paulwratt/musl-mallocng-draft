@@ -5,6 +5,8 @@
 #include <sys/mman.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 // use macros to appropriately namespace these. for libc,
 // the names would be changed to lie in __ namespace.
@@ -72,7 +74,17 @@ static inline void a_or(volatile int *p, int v)
 static inline uint64_t get_random_secret()
 {
 	uint64_t secret;
-	getentropy(&secret, sizeof secret);
+
+	int fd = open("/dev/urandom", O_CLOEXEC | O_RDONLY);
+	if (fd < 0) {
+		fd = open("/dev/random", O_CLOEXEC | O_RDONLY);
+		if (fd < 0)
+			return 0;
+	}
+	if (read(fd, &secret, sizeof secret) != sizeof secret)
+		secret = 0;
+	close(fd);
+
 	return secret;
 }
 
