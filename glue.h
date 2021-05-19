@@ -1,6 +1,7 @@
 #ifndef MALLOC_GLUE_H
 #define MALLOC_GLUE_H
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <sys/mman.h>
 #include <pthread.h>
@@ -79,10 +80,10 @@ static inline uint64_t get_random_secret()
 	if (fd < 0) {
 		fd = open("/dev/random", O_CLOEXEC | O_RDONLY);
 		if (fd < 0)
-			return 0;
+			return rand();
 	}
 	if (read(fd, &secret, sizeof secret) != sizeof secret)
-		secret = 0;
+		secret = rand();
 	close(fd);
 
 	return secret;
